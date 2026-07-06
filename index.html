@@ -1124,7 +1124,7 @@ function productionGroupsForGroup(groupId){
 function seedUsers(groups){
   const g1 = groups[0].id, g2 = groups[1].id;
   return [
-    { id:uid('usr'), name:'Super Administrador', email:'superadmin@parcerseguros.com.br', password:'super123', role:'superadmin', groupId:null, active:true, createdAt:todayISO(-150) },
+    { id:uid('usr'), name:'Super Administrador', email:'super@parcerseguros.com.br', password:'super123', role:'superadmin', groupId:null, active:true, createdAt:todayISO(-150) },
     { id:uid('usr'), name:'Administrador Geral', email:'admin@parcerseguros.com.br', password:'admin123', role:'admin', groupId:null, adminScope:'all', active:true, createdAt:todayISO(-120) },
     { id:uid('usr'), name:'Juliana Prado', email:'juliana@parcerseguros.com.br', password:'gestor123', role:'gestor', groupId:g1, active:true, createdAt:todayISO(-110), permissions:defaultPermissions() },
     { id:uid('usr'), name:'Marina Costa', email:'marina@parcerseguros.com.br', password:'corretor123', role:'corretor', groupId:g1, active:true, createdAt:todayISO(-100), permissions:defaultPermissions() },
