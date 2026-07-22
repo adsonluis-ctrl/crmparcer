@@ -954,8 +954,8 @@ input,select,textarea{font-family:inherit;}
    SUPABASE — camada de armazenamento (substitui o window.storage
    do ambiente de artifact para funcionar fora do Claude, ex: GitHub Pages)
    ========================================================= */
-const SUPABASE_URL = "https://rsbelmgrdgrgtzufmciq.supabase.co";
-const SUPABASE_KEY = "sb_publishable_OYWRskxY3kcpRQeGSV2d6Q_u0GuU3eR";
+const SUPABASE_URL = "https://fdnejcmaffekwzjvajkd.supabase.co";
+const SUPABASE_KEY = "sb_publishable_aY7gmXXBd8xpgKYaLEs3jA_5yBmS1ck";
 const SUPABASE_TABLE = "cockpit_storage";
 
 window.storage = {
@@ -8646,21 +8646,38 @@ async function checkSupabaseConnection(){
     const res = await fetch(`${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}?select=key&limit=1`, {
       headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
     });
-    return res.ok;
-  }catch(e){ return false; }
+    if(!res.ok){
+      let detail = '';
+      try{ detail = await res.text(); }catch(e){}
+      return { ok:false, status:res.status, detail };
+    }
+    return { ok:true };
+  }catch(e){
+    return { ok:false, status:null, detail: (e && e.message) || String(e) };
+  }
 }
 
 async function initApp(){
   buildViewsShell();
-  const connected = await checkSupabaseConnection();
-  if(!connected){
+  const check = await checkSupabaseConnection();
+  if(!check.ok){
     document.getElementById('loginScreen').style.display='flex';
     const card = document.getElementById('loginCard');
     card.classList.remove('booting');
+    let hint = 'Verifique a URL e a chave do Supabase configuradas no sistema, e se a tabela cockpit_storage foi criada corretamente.';
+    if(check.status===401 || check.status===403){
+      hint = 'A chave do Supabase foi recusada (erro '+check.status+'). Confira se a chave configurada é a certa e se as políticas de RLS da tabela cockpit_storage permitem acesso (select/insert/update/delete) para a chave usada.';
+    }else if(check.status===404){
+      hint = 'A tabela ou o endpoint não foi encontrado (erro 404). Confira se a URL do projeto Supabase está certa e se a tabela cockpit_storage existe exatamente com esse nome.';
+    }else if(check.status){
+      hint = 'O Supabase respondeu com erro '+check.status+'. Detalhe técnico: '+(check.detail||'—');
+    }else{
+      hint = 'Não foi possível nem conectar ao endereço do Supabase (sem resposta do servidor). As causas mais comuns são: o projeto Supabase está pausado (comum em projetos gratuitos inativos — acesse o painel do Supabase e reative), a URL do projeto está errada, ou não há conexão com a internet nesse computador.';
+    }
     card.innerHTML = `
       <div style="text-align:center;padding:10px;">
         <div style="font-weight:800;font-size:15px;color:var(--danger);margin-bottom:10px;">Não foi possível conectar ao banco de dados</div>
-        <div style="font-size:12.5px;color:var(--text-muted);line-height:1.6;">Verifique a URL e a chave do Supabase configuradas no sistema, e se a tabela <code>cockpit_storage</code> foi criada corretamente.</div>
+        <div style="font-size:12.5px;color:var(--text-muted);line-height:1.6;">${hint}</div>
       </div>
     `;
     return;
